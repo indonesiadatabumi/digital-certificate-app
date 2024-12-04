@@ -208,7 +208,9 @@ function fitTextToBox(ctx, text, maxWidth, maxHeight) {
 
 async function addTextWithBoundingBox(imagePath, textData, memberName) {
     try {
-        const outputPath = path.join(process.cwd(), "uploads", `${memberName}.jpg`);
+        const timestamp = Math.floor(Date.now() / 1000);
+        fileMemberName = memberName.replace(/\s+/g, '')+"-"+timestamp;
+        const outputPath = path.join(process.cwd(), "uploads", `${fileMemberName}.jpg`);
         gm(imagePath)
             .font('Arial', 48)  // Font and size
             .fill('#003366')    // Text color (dark blue)
