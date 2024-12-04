@@ -50,8 +50,8 @@ exports.downloadCert = async (req, res) => {
         const cert = await knexInstance('certificates').where({ id, user_id: req.user.id }).first();
         if (!cert) return res.status(404).json({ error: 'Certificate not found' });
 
-        const filePath = path.join(process.cwd(), '../uploads', cert.filename);
-        res.download(filePath);
+        // const filePath = path.join(process.cwd(), 'uploads', cert.filename);
+        res.download(cert.filename);
     } catch (error) {
         res.status(500).json({ error: 'Download failed' });
     }
