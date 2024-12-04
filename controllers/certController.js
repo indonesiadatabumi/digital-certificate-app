@@ -88,8 +88,8 @@ exports.generateCertificate = async (req, res) => {
         const mailOptions = {
             from: 'indonesiadatabumi@gmail.com',
             to: email,
-            subject: 'Your Certificate',
-            text: `Dear ${memberName},\n\nPlease find attached your certificate for "${certifiedText}".\n\nBest regards,\nYour Team`,
+            subject: 'Certificate',
+            text: `Dear ${memberName},\n\nPlease find attached your certificate for "${certifiedText}".\n\nBest regards,\nDBI Team`,
             attachments: [
                 {
                     filename: path.basename(filePath),
