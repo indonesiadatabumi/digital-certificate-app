@@ -8,6 +8,7 @@ const knexInstance = require('../knex');
 const sharp = require("sharp");
 const Tesseract = require("tesseract.js");
 const { createCanvas, loadImage } = require("canvas");
+const gm = require('gm').subClass({ imageMagick: true });
 
 
 const imagePath = path.resolve(process.cwd(), "templates", "certificate-template.jpg");
@@ -67,7 +68,7 @@ exports.generateCertificate = async (req, res) => {
         port: 587,
         auth: {
             user: 'indonesiadatabumi@gmail.com',
-            pass: 'Dbi@2020',
+            pass: 'cvlv cbjo jrqf hcrk',
         },
     });
 
@@ -105,7 +106,7 @@ exports.generateCertificate = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ error: 'Failed to generate certificate' });
+        return res.status(500).json({ error: `Failed to generate certificate ${error}` });
     }
 };
 
@@ -207,100 +208,17 @@ function fitTextToBox(ctx, text, maxWidth, maxHeight) {
 
 async function addTextWithBoundingBox(imagePath, textData, memberName) {
     try {
-
-        // Load the image
-        const image = await loadImage(imagePath);
-        // Create a canvas with the image dimensions
-        const canvas = createCanvas(image.width, image.height);
-        const ctx = canvas.getContext('2d');
-
-        // ctx.setTransform(1, 0, 0, 1, 0, 0);  // Reset scaling before drawing
-
-        // Draw the image on the canvas
-        ctx.drawImage(image, 0, 0);
-        
-
-        // Define the bounding box
-        const box = {
-            x: 118, // Top-left x-coordinate
-            y: 508, // Top-left y-coordinate
-            width: 826, // Box width
-            height: 140, // Box height
-        };
-
-        // Text to render
-        const text = memberName;
-
-        // Start with a large font size and scale down
-
-        // Dynamically adjust font size to fit text width in the box
-        while (ctx.measureText(text).width > box.width && fontSize > 10) {
-            fontSize--; // Decrease font size
-            ctx.font = `${fontSize}px Arial`;
-        }
-
-        // Fill the bounding box (optional, for visualization)
-        // ctx.fillStyle = 'rgba(0, 0, 0, 0)'; // Light transparent black
-        // ctx.fillRect(box.x, box.y, box.width, box.height);
-        // fitTextToBox(ctx, text, box.width, box.height);
-
-        // Set text color and alignment
-        ctx.fillStyle = 'white'; // Text color
-        ctx.textAlign = 'left'; // Center align horizontally
-        ctx.textBaseline = 'middle'; // Center align vertically
-
-        // Calculate text position within the box
-        const textX = box.x; // Center of the box (x-axis)
-        const textY = box.y + (box.height / 2); //(box.y + box.height) / 2; // Center of the box (y-axis)
-        // console.log(textX, textY);
-        // let fontSize = box.y + box.height; // Maximum font size is the box height
-        // let fontSize = 10000; // Maximum font size is the box height
-
-        // ctx.quality = 'best'
-        // ctx.font = '148px';  // Set a large font size
-        // ctx.fillStyle = 'black';
-        // ctx.strokeRect(box.x, box.y, box.width, box.height);
-        // ctx.fillStyle = 'rgba(0, 0, 0, 0)';  // Black with 50% opacity
-        // ctx.fillRect(box.x, box.y, box.width, box.height);         // Adjust position and size
-
-        // ctx.strokeText(text, textX, textY, box.width);
-        ctx.fillText(text, textX, textY, box.width);
-
         const outputPath = path.join(process.cwd(), "uploads", `${memberName}.jpg`);
-        const out = fs.createWriteStream(outputPath);
-        const stream = canvas.createJPEGStream();
-        stream.pipe(out);
-
-        out.on('finish', () => console.log(`Image saved to ${outputPath}`));
-
+        gm(imagePath)
+            .font('Arial', 48)  // Font and size
+            .fill('#003366')    // Text color (dark blue)
+            .drawText(118, 38, memberName, 'West')  // Text, positioning relative to center
+            .write(outputPath, (err) => {
+                if (err) console.error('Error:', err);
+                else console.log('Certificate generated successfully:', outputPath);
+            });
+        return outputPath;
     } catch (error) {
-        console.error('Error processing the image:', error);
+        return undefined;
     }
-
-    // loadImage(imagePath).then((image) => {
-    //     const canvas = createCanvas(image.width, image.height);
-    //     const ctx = canvas.getContext('2d');
-      
-    //     // Draw the template image
-    //     ctx.drawImage(image, 0, 0, image.width, image.height);
-    //     ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-    //     ctx.font = 'bold 141px Arial';
-    //     ctx.fillStyle = '#003366';
-    //     ctx.textAlign = 'center';
-      
-    //     // Add the recipient's name
-    //     // const recipientName = 'John Doe';  // Change dynamically per user
-    //     ctx.fillText(memberName, canvas.width / 2, 330);  // Adjust Y position as needed
-      
-    //     // Add additional details
-    //     ctx.font = '24px Arial';   // Smaller font for other text
-    //     ctx.fillText('November 2024', canvas.width / 2, 460);  // Date position
-      
-    //     // Save the generated certificate
-    //     const buffer = canvas.toBuffer('image/png');
-    //     //     const outputPath = path.join(process.cwd(), "uploads", `${memberName}.jpg`);
-    //     fs.writeFileSync('generated-certificate.png', buffer);
-    //     console.log('Certificate generated successfully!');
-    //   }).catch(err => console.error('Error loading image:', err));
 }
